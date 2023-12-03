@@ -5,7 +5,7 @@ After=syslog.target network.target
 [Service]
 Type=simple
 WorkingDirectory=/home/nullkal/ap-test-202312
-ExecStart=npx tsx /home/nullkal/ap-test-202312/src/index.ts
+ExecStart=npx tsx /home/nullkal/ap-test-202312/src/index.tsx
 KillMode=process
 Restart=always
 RestartSec=10

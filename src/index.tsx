@@ -6,6 +6,7 @@ import { serveStatic } from '@hono/node-server/serve-static'
 import { basicAuth } from 'hono/basic-auth'
 import { html, raw } from 'hono/html'
 import { logger } from 'hono/logger'
+import ky from 'ky'
 import * as fs from 'fs'
 
 const USERNAME = process.env.USERNAME || 'nullkal'
@@ -24,7 +25,7 @@ const auth = basicAuth({
   password: process.env.PASSWORD || 'password',
 })
 app.use('/timeline', auth)
-app.use('/post', auth)
+app.use('/action', auth)
 
 app.get('/', (c) => {
   return c.html(html`
@@ -142,6 +143,19 @@ app.get(`/users/${USERNAME}`, (c) => {
         "url": `https://${DOMAIN}/static/icon.png`,
     },
   })
+})
+
+app.get('/timeline', (c) => {
+  return c.html(<html>
+    <head>
+      <title>Timeline</title>
+    </head>
+
+    <body>
+      <h1>Timeline</h1>
+      <p>TODO: ユーザーのタイムラインを表示する</p>
+    </body>
+  </html>)
 })
 
 serve(app)
