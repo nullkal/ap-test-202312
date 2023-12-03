@@ -126,9 +126,13 @@ var getUserAction = (c: Context) => {
     "summary": "ActivityPubの実験実装を試しています。",
     "url": `https://${DOMAIN}/@${USERNAME}`,
     "manuallyApprovesFollowers": false,
+    "discoverable": true,
+    "indexable": true,
+    "published": "2023-12-03T22:34:01+09:00",
+    "memorial": false,
     "publicKey": {
-      "id": "https://${DOMAIN}/users/${USERNAME}#main-key",
-      "owner": "https://${DOMAIN}/users/${USERNAME}",
+      "id": `https://${DOMAIN}/users/${USERNAME}#main-key`,
+      "owner": `https://${DOMAIN}/users/${USERNAME}`,
       "publicKeyPem": PUBLIC_KEY,
     },
     "icon": {
