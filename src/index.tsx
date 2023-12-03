@@ -3,7 +3,9 @@ import 'dotenv/config'
 import { serve } from '@hono/node-server'
 import { Context, Hono } from 'hono'
 import { serveStatic } from '@hono/node-server/serve-static'
+import { basicAuth } from 'hono/basic-auth'
 import { logger } from 'hono/logger'
+import ky from 'ky'
 import * as fs from 'fs'
 
 const USERNAME = process.env.USERNAME || 'nullkal'
@@ -16,6 +18,13 @@ const app = new Hono()
 
 app.use('*', logger())
 app.use('/static/*', serveStatic({ root: './' }))
+
+const auth = basicAuth({
+  username: USERNAME,
+  password: process.env.PASSWORD || 'password',
+})
+app.use('/timeline', auth)
+app.use('/action', auth)
 
 app.get('/', (c) => {
   return c.html(
@@ -135,5 +144,76 @@ var getUserAction = (c: Context) => {
 
 app.get(`/@${USERNAME}`, getUserAction)
 app.get(`/users/${USERNAME}`, getUserAction)
+
+app.post(`/users/${USERNAME}/inbox`, async (c) => {
+  const body = await c.req.json()
+  switch (body.type) {
+    case 'Follow': {
+      const follow = body as {
+        type: 'Follow',
+        actor: string,
+        object: string,
+      }
+
+      if (follow.object !== `https://${DOMAIN}/users/${USERNAME}`) {
+        return c.json({
+          error: 'invalid_object',
+        }, 400)
+      }
+
+      // (注意！) 送信元のユーザーの正当性を確認していない危険な実装になっているので、
+      // ちゃんと実装するときにはHTTP Signatureを使って送信元のユーザーを確認してください。
+
+      //TODO: フォローをDBに保存する
+
+      return c.json({
+        type: 'Accept',
+        actor: `https://${DOMAIN}/users/${USERNAME}`,
+        object: follow,
+      })
+    }
+    default: {
+      return c.json({
+        error: 'invalid_type',
+      }, 400)
+    }
+  }
+})
+
+app.post('/action/follow', async (c) => {
+  const body = await c.req.parseBody()
+  switch (body.action) {
+    case 'follow': {
+      return c.json({})
+    }
+    case 'unfollow': {
+      return c.json({})
+    }
+    default: {
+      return c.json({
+        error: 'invalid_action',
+      }, 400)
+    }
+  }
+})
+
+app.get('/timeline', (c) => {
+  return c.html(<html>
+    <head>
+      <title>Timeline: An experimental implementation of ActivityPub (2023/12)</title>
+    </head>
+
+    <body>
+      <form action="/action/follow" method="POST">
+        <input type="text" name="user" />
+        <button type="submit" name="action" value="follow">フォロー</button>
+        <button type="submit" name="action" value="unfollow">フォロー解除</button>
+      </form>
+
+      <h2>タイムライン</h2>
+      <p>TODO: ユーザーのタイムラインを表示する</p>
+    </body>
+  </html>)
+})
 
 serve(app)
