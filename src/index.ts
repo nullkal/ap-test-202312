@@ -97,7 +97,7 @@ app.get(`/@${USERNAME}`, (c) => {
 })
 
 app.get(`/users/${USERNAME}`, (c) => {
-  if (c.req.header('accept') !== 'application/activity+json') {
+  if (c.req.header('Accept') !== 'application/activity+json') {
     return c.redirect(`https://${DOMAIN}/@${USERNAME}`)
   }
 
@@ -118,7 +118,7 @@ app.get(`/users/${USERNAME}`, (c) => {
     "preferredUsername": `${USERNAME}`,
     "name": "カル (ActivityPub 実験中)",
     "summary": "ActivityPubの実験実装を試しています。",
-    "url": "https://social.nil.nu/@nullkal",
+    "url": `https://${DOMAIN}/@${USERNAME}`,
     "manuallyApprovesFollowers": false,
     "publicKey": {
       "id": "https://${DOMAIN}/users/${USERNAME}#main-key",
