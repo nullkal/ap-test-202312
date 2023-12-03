@@ -1,7 +1,7 @@
 import 'dotenv/config'
 
 import { serve } from '@hono/node-server'
-import { Hono } from 'hono'
+import { Context, Hono } from 'hono'
 import { serveStatic } from '@hono/node-server/serve-static'
 import { basicAuth } from 'hono/basic-auth'
 import { html, raw } from 'hono/html'
@@ -102,14 +102,9 @@ app.get('/.well-known/webfinger', (c) => {
   })
 })
 
-app.get(`/@${USERNAME}`, (c) => {
-  // TODO: ユーザーのプロフィールページを表示する
-  return c.redirect(`https://${DOMAIN}/`)
-})
-
-app.get(`/users/${USERNAME}`, (c) => {
+var getUserAction = (c: Context) => {
   if (!c.req.header('accept')?.includes('application/activity+json')) {
-    return c.redirect(`https://${DOMAIN}/@${USERNAME}`)
+    return c.redirect(`https://${DOMAIN}/`)
   }
 
   return c.json({
@@ -142,16 +137,46 @@ app.get(`/users/${USERNAME}`, (c) => {
         "url": `https://${DOMAIN}/static/icon.png`,
     },
   })
+}
+
+app.get(`/@${USERNAME}`, getUserAction)
+app.get(`/users/${USERNAME}`, getUserAction)
+
+app.post(`/users/${USERNAME}/inbox`, (c) => {
+
+})
+
+app.post('/action/follow', async (c) => {
+  const body = await c.req.parseBody()
+  switch (body.action) {
+    case 'follow': {
+      break
+    }
+    case 'unfollow': {
+      break
+    }
+    default: {
+      return c.json({
+        error: 'invalid_action',
+      }, 400)
+    }
+  }
 })
 
 app.get('/timeline', (c) => {
   return c.html(<html>
     <head>
-      <title>An experimental implementation of ActivityPub (2023/12)</title>
+      <title>Timeline: An experimental implementation of ActivityPub (2023/12)</title>
     </head>
 
     <body>
-      <h1>Timeline</h1>
+      <form action="/action/follow" method="POST">
+        <input type="text" name="user" />
+        <button type="submit" name="action" value="follow">フォロー</button>
+        <button type="submit" name="action" value="unfollow">フォロー解除</button>
+      </form>
+
+      <h2>タイムライン</h2>
       <p>TODO: ユーザーのタイムラインを表示する</p>
     </body>
   </html>)
