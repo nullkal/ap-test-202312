@@ -97,7 +97,7 @@ app.get(`/@${USERNAME}`, (c) => {
 })
 
 app.get(`/users/${USERNAME}`, (c) => {
-  if (c.req.header('Accept') !== 'application/activity+json') {
+  if (c.req.header('accept')?.includes('application/activity+json')) {
     return c.redirect(`https://${DOMAIN}/@${USERNAME}`)
   }
 
