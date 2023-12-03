@@ -28,20 +28,19 @@ app.use('/timeline', auth)
 app.use('/action', auth)
 
 app.get('/', (c) => {
-  return c.html(html`
-    <!DOCTYPE html>
+  return c.html(
     <html>
       <head>
         <title>An experimental implementation of ActivityPub (2023/12)</title>
       </head>
 
       <body>
-        <h1>ActivityPubの実験実装 (2023/12版)</h1>
-        <p>このサイトはActivityPubの実験実装です。</p>
-        <p>実装者: <a href="https://social.nil.nu/@nullkal">@nullkal</a></p>
-      </body>
+          <h1>ActivityPubの実験実装 (2023/12版)</h1>
+          <p>このサイトはActivityPubの実験実装です。</p>
+          <p>実装者: <a href="https://social.nil.nu/@nullkal">@nullkal</a></p>
+        </body>
     </html>
-  `)
+  )
 })
 
 app.get('/.well-known/nodeinfo', (c) => {
@@ -148,7 +147,7 @@ app.get(`/users/${USERNAME}`, (c) => {
 app.get('/timeline', (c) => {
   return c.html(<html>
     <head>
-      <title>Timeline</title>
+      <title>An experimental implementation of ActivityPub (2023/12)</title>
     </head>
 
     <body>
