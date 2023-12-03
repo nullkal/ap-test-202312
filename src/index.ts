@@ -85,7 +85,7 @@ app.get('/.well-known/webfinger', (c) => {
       {
         "rel": "self",
         "type": "application/activity+json",
-        "href": `https://${DOMAIN}/users/${USERNAME}/actor`,
+        "href": `https://${DOMAIN}/users/${USERNAME}`,
       },
     ],
   })
