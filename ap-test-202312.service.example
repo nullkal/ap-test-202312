@@ -1,0 +1,16 @@
+[Unit]
+Description=An experimental implementation of ActivityPub (2023/12)
+After=syslog.target network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/nullkal/ap-test-202312
+ExecStart=npx tsx /home/nullkal/ap-test-202312/src/index.ts
+KillMode=process
+Restart=always
+RestartSec=10
+User=nullkal
+Group=nullkal
+
+[Install]
+WantedBy=multi-user.target
