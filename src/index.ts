@@ -3,7 +3,9 @@ import 'dotenv/config'
 import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
 import { serveStatic } from '@hono/node-server/serve-static'
+import { basicAuth } from 'hono/basic-auth'
 import { html, raw } from 'hono/html'
+import { logger } from 'hono/logger'
 import * as fs from 'fs'
 
 const USERNAME = process.env.USERNAME || 'nullkal'
@@ -13,7 +15,16 @@ const PUBLIC_KEY = fs.readFileSync('./data/public.pem', 'utf8')
 const PRIVATE_KEY = fs.readFileSync('./data/private.pem', 'utf8')
 
 const app = new Hono()
+
+app.use('*', logger())
 app.use('/static/*', serveStatic({ root: './' }))
+
+const auth = basicAuth({
+  username: USERNAME,
+  password: process.env.PASSWORD || 'password',
+})
+app.use('/timeline', auth)
+app.use('/post', auth)
 
 app.get('/', (c) => {
   return c.html(html`
