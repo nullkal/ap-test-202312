@@ -3,10 +3,7 @@ import 'dotenv/config'
 import { serve } from '@hono/node-server'
 import { Context, Hono } from 'hono'
 import { serveStatic } from '@hono/node-server/serve-static'
-import { basicAuth } from 'hono/basic-auth'
-import { html, raw } from 'hono/html'
 import { logger } from 'hono/logger'
-import ky from 'ky'
 import * as fs from 'fs'
 
 const USERNAME = process.env.USERNAME || 'nullkal'
@@ -19,13 +16,6 @@ const app = new Hono()
 
 app.use('*', logger())
 app.use('/static/*', serveStatic({ root: './' }))
-
-const auth = basicAuth({
-  username: USERNAME,
-  password: process.env.PASSWORD || 'password',
-})
-app.use('/timeline', auth)
-app.use('/action', auth)
 
 app.get('/', (c) => {
   return c.html(
@@ -145,45 +135,5 @@ var getUserAction = (c: Context) => {
 
 app.get(`/@${USERNAME}`, getUserAction)
 app.get(`/users/${USERNAME}`, getUserAction)
-
-app.post(`/users/${USERNAME}/inbox`, (c) => {
-
-})
-
-app.post('/action/follow', async (c) => {
-  const body = await c.req.parseBody()
-  switch (body.action) {
-    case 'follow': {
-      break
-    }
-    case 'unfollow': {
-      break
-    }
-    default: {
-      return c.json({
-        error: 'invalid_action',
-      }, 400)
-    }
-  }
-})
-
-app.get('/timeline', (c) => {
-  return c.html(<html>
-    <head>
-      <title>Timeline: An experimental implementation of ActivityPub (2023/12)</title>
-    </head>
-
-    <body>
-      <form action="/action/follow" method="POST">
-        <input type="text" name="user" />
-        <button type="submit" name="action" value="follow">フォロー</button>
-        <button type="submit" name="action" value="unfollow">フォロー解除</button>
-      </form>
-
-      <h2>タイムライン</h2>
-      <p>TODO: ユーザーのタイムラインを表示する</p>
-    </body>
-  </html>)
-})
 
 serve(app)
