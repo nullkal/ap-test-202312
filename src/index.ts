@@ -91,12 +91,12 @@ app.get('/.well-known/webfinger', (c) => {
   })
 })
 
-app.get('/@${USERNAME}', (c) => {
+app.get(`/@${USERNAME}`, (c) => {
   // TODO: ユーザーのプロフィールページを表示する
   return c.redirect(`https://${DOMAIN}/`)
 })
 
-app.get('/users/${USERNAME}', (c) => {
+app.get(`/users/${USERNAME}`, (c) => {
   if (c.req.header('accept') !== 'application/activity+json') {
     return c.redirect(`https://${DOMAIN}/@${USERNAME}`)
   }
