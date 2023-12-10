@@ -3,6 +3,6 @@ module.exports = {
     name   : "ap-test-202312",
     script : "./src/index.tsx",
     interpreter: 'node',
-    interpreterArgs: '--loader tsx',
+    interpreterArgs: '--import tsx',
   }]
 }
