@@ -9,3 +9,37 @@ datasource db {
   provider = "sqlite"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  id Int @id @default(autoincrement())
+  screenName String
+  domain String
+  inbox String
+  displayName String
+  iconUrl String
+  publicKey String
+
+  followers Follows[] @relation("following")
+  following Follows[] @relation("follower")
+
+  posts Post[]
+
+  @@unique([domain, screenName])
+}
+
+model Follows {
+  follower User @relation("follower", fields: [followerId], references: [id])
+  followerId Int
+  following User @relation("following", fields: [followingId], references: [id])
+  followingId Int
+
+  @@id([followerId, followingId])
+}
+
+model Post {
+  id Int @id @default(autoincrement())
+  content String
+  author User @relation(fields: [authorId], references: [id])
+  authorId Int
+  postedAt DateTime
+}
