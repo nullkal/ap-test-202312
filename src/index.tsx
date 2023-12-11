@@ -264,8 +264,6 @@ app.post(`/users/${USERNAME}/inbox`, async (c) => {
         update: {},
       })
 
-      // TODO: HTTP Signatureで署名する。JSONの中身も適当なのでなんとかする。
-
       const acceptRequestJson = {
         "@context": "https://www.w3.org/ns/activitystreams",
         id: `https://${DOMAIN}/users/${USERNAME}/outbox/1`,
@@ -284,6 +282,8 @@ app.post(`/users/${USERNAME}/inbox`, async (c) => {
       return c.json({})
     }
     default: {
+      // TODO: フォロー解除を処理する, こっちからフォローしたののAcceptを処理する
+
       return c.json(
         {
           error: "invalid_type",
