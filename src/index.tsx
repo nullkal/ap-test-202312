@@ -48,6 +48,7 @@ const signedFetch = async (url: string, options: any) => {
         .update(options.body)
         .digest("base64")}`
     : null
+  console.log(`digest: ${digest}`)
 
   const headers = {
     host: new URL(url).host,
@@ -55,6 +56,7 @@ const signedFetch = async (url: string, options: any) => {
     digest,
     ...options.headers,
   }
+  console.log(`headers: ${JSON.stringify(headers)}`)
 
   const method = options.method || "GET"
   const signer = new Sha256Signer({
@@ -266,13 +268,16 @@ app.post(`/users/${USERNAME}/inbox`, async (c) => {
         actor: `https://${DOMAIN}/users/${USERNAME}`,
         object: body,
       }
-      await signedFetch(actor.inbox, {
+      const resp = await signedFetch(actor.inbox, {
         method: "POST",
         body: JSON.stringify(acceptRequestJson),
         headers: {
           "Content-Type": "application/activity+json",
         },
       })
+      console.log(
+        `Response: ${resp.status} ${resp.statusText}: ${await resp.text()}}`
+      )
 
       return c.json({})
     }
