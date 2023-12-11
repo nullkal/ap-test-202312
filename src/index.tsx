@@ -219,7 +219,7 @@ app.post(`/users/${USERNAME}/inbox`, async (c) => {
 
       const actorDomain = new URL(actorId).host
 
-      const actor: any = (
+      const actor: any = await (
         await fetch(actorId, {
           headers: { Accept: "application/activity+json" },
         })
