@@ -59,7 +59,7 @@ const signedFetch = async (url: string, options: any) => {
   const method = options.method || "GET"
   const signer = new Sha256Signer({
     publicKeyId: `https://${DOMAIN}/users/${USERNAME}#main-key`,
-    PRIVATE_KEY,
+    privateKey: PRIVATE_KEY,
   })
 
   const signature = signer.sign({ url, method, headers })
