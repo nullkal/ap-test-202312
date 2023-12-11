@@ -200,10 +200,10 @@ app.post(`/users/${USERNAME}/inbox`, async (c) => {
   var selfUser = await getSelfUser()
 
   const body = await c.req.json()
-  switch (body["@type"]) {
+  switch (body["type"]) {
     case "Follow": {
-      const actorId = body.actor["@id"]
-      const objectId = body.object["@id"]
+      const actorId = body.actor
+      const objectId = body.object
 
       if (objectId !== `https://${DOMAIN}/users/${USERNAME}`) {
         return c.json(
