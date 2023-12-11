@@ -54,7 +54,6 @@ const signedFetch = async (url: string, options: any) => {
     "date",
     ...(digest ? ["digest"] : []),
   ]
-  console.log(`digest: ${digest}`)
 
   const headers = {
     host: new URL(url).host,
@@ -62,7 +61,6 @@ const signedFetch = async (url: string, options: any) => {
     digest,
     ...options.headers,
   }
-  console.log(`headers: ${JSON.stringify(headers)}`)
 
   const method = options.method || "GET"
   const signer = new Sha256Signer({
@@ -252,7 +250,7 @@ app.post(`/users/${USERNAME}/inbox`, async (c) => {
         update: {},
       })
 
-      prisma.follows.upsert({
+      await prisma.follows.upsert({
         where: {
           followerId_followingId: {
             followerId: selfUser.id,
@@ -282,9 +280,6 @@ app.post(`/users/${USERNAME}/inbox`, async (c) => {
           "Content-Type": "application/activity+json",
         },
       })
-      console.log(
-        `Response: ${resp.status} ${resp.statusText}: ${await resp.text()}}`
-      )
 
       return c.json({})
     }
