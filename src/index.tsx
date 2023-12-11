@@ -5,10 +5,12 @@ import { Context, Hono } from "hono"
 import { serveStatic } from "@hono/node-server/serve-static"
 import { basicAuth } from "hono/basic-auth"
 import { logger } from "hono/logger"
-import ky from "ky"
+import fetch from "node-fetch"
 import * as fs from "fs"
 import { PrismaClient } from "@prisma/client"
-import { url } from "inspector"
+import { assert } from "console"
+import { Sha256Signer } from "activitypub-http-signatures"
+import * as crypto from "crypto"
 
 const USERNAME = process.env.USERNAME || "nullkal"
 const DOMAIN = process.env.DOMAIN || "localhost"
@@ -31,10 +33,46 @@ app.use("/followers", auth)
 app.use("/followings", auth)
 app.use("/action", auth)
 
-const getSelfUser = async () =>
-  await prisma.user.findUnique({
+const getSelfUser = async () => {
+  const selfUser = await prisma.user.findUnique({
     where: { domain_screenName: { domain: DOMAIN, screenName: USERNAME } },
   })
+  assert(selfUser !== null)
+  return selfUser!
+}
+
+const signedFetch = async (url: string, options: any) => {
+  const digest = options.body
+    ? `SHA-256=${crypto
+        .createHash("sha256")
+        .update(options.body)
+        .digest("base64")}`
+    : null
+
+  const headers = {
+    host: new URL(url).host,
+    date: new Date().toUTCString(),
+    digest,
+    ...options.headers,
+  }
+
+  const method = options.method || "GET"
+  const signer = new Sha256Signer({
+    publicKeyId: `https://${DOMAIN}/users/${USERNAME}#main-key`,
+    PRIVATE_KEY,
+  })
+
+  const signature = signer.sign({ url, method, headers })
+
+  return await fetch(url, {
+    ...options,
+    headers: {
+      ...headers,
+      signature,
+      accept: "application/ld+json",
+    },
+  })
+}
 
 app.get("/", (c) => {
   return c.html(
@@ -159,7 +197,7 @@ app.get(`/@${USERNAME}`, getUserAction)
 app.get(`/users/${USERNAME}`, getUserAction)
 
 app.post(`/users/${USERNAME}/inbox`, async (c) => {
-  var selfUser = getSelfUser()
+  var selfUser = await getSelfUser()
 
   const body = await c.req.json()
   switch (body["@type"]) {
@@ -181,10 +219,13 @@ app.post(`/users/${USERNAME}/inbox`, async (c) => {
 
       const actorDomain = new URL(actorId).host
 
-      const actor: any = await ky
-        .get(actorId, { headers: { Accept: "application/activity+json" } })
-        .json()
-      const actorUser = prisma.user.upsert({
+      const actor: any = (
+        await fetch(actorId, {
+          headers: { Accept: "application/activity+json" },
+        })
+      ).json()
+
+      const actorUser = await prisma.user.upsert({
         where: {
           domain_screenName: {
             domain: actorDomain,
@@ -204,24 +245,30 @@ app.post(`/users/${USERNAME}/inbox`, async (c) => {
 
       prisma.follows.upsert({
         where: {
-          follower_following: {
-            follower: selfUser,
-            following: actorUser,
+          followerId_followingId: {
+            followerId: selfUser.id,
+            followingId: actorUser.id,
           },
         },
-        create: {},
+        create: {
+          followerId: selfUser.id,
+          followingId: actorUser.id,
+        },
         update: {},
       })
 
       // TODO: HTTP Signatureで署名する。JSONの中身も適当なのでなんとかする。
-      await ky.post(actor.inbox, {
-        json: {
-          "@context": "https://www.w3.org/ns/activitystreams",
-          id: `https://${DOMAIN}/users/${USERNAME}/outbox/1`,
-          type: "Accept",
-          actor: `https://${DOMAIN}/users/${USERNAME}`,
-          object: body,
-        },
+
+      const acceptRequestJson = {
+        "@context": "https://www.w3.org/ns/activitystreams",
+        id: `https://${DOMAIN}/users/${USERNAME}/outbox/1`,
+        type: "Accept",
+        actor: `https://${DOMAIN}/users/${USERNAME}`,
+        object: body,
+      }
+      await signedFetch(actor.inbox, {
+        method: "POST",
+        body: JSON.stringify(acceptRequestJson),
         headers: {
           "Content-Type": "application/activity+json",
         },
@@ -263,7 +310,7 @@ app.post("/action/follow", async (c) => {
 })
 
 app.get("/timeline", async (c) => {
-  var selfUser = getSelfUser()
+  var selfUser = await getSelfUser()
 
   return c.html(
     <html>
@@ -287,12 +334,16 @@ app.get("/timeline", async (c) => {
               <br />
               フォロワー:{" "}
               <a href="/followers">
-                {await prisma.follows.count({ where: { follower: selfUser } })}
+                {await prisma.follows.count({
+                  where: { followerId: selfUser.id },
+                })}
                 人
               </a>
               , フォロー中:{" "}
               <a href="/followings">
-                {await prisma.follows.count({ where: { following: selfUser } })}
+                {await prisma.follows.count({
+                  where: { followingId: selfUser.id },
+                })}
                 人
               </a>
             </p>
