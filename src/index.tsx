@@ -48,6 +48,12 @@ const signedFetch = async (url: string, options: any) => {
         .update(options.body)
         .digest("base64")}`
     : null
+  const headerNames = [
+    "(request-target)",
+    "host",
+    "date",
+    ...(digest ? ["digest"] : []),
+  ]
   console.log(`digest: ${digest}`)
 
   const headers = {
@@ -62,6 +68,7 @@ const signedFetch = async (url: string, options: any) => {
   const signer = new Sha256Signer({
     publicKeyId: `https://${DOMAIN}/users/${USERNAME}#main-key`,
     privateKey: PRIVATE_KEY,
+    headerNames,
   })
 
   const signature = signer.sign({ url, method, headers })
