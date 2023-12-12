@@ -582,11 +582,21 @@ app.get("/timeline", async (c) => {
         ).map((post) => {
           return (
             <div>
-              <p>
-                <a href={post.author.actorId}>
-                  @{post.author.screenName}@{post.author.domain}
-                </a>
-              </p>
+              <div style="display: flex; align-items: center;">
+                <img
+                  src="/static/icon.png"
+                  width="64"
+                  hegiht="64"
+                  style=" width: 64px; height: 64px; border: solid 1px #999; flex-shrink: 0;"
+                />
+                <div>
+                  {post.author.displayName}
+                  <br />
+                  <a href={post.author.actorId}>
+                    @{post.author.screenName}@{post.author.domain}
+                  </a>
+                </div>
+              </div>
               <p>{post.content}</p>
               <p>{post.postedAt.toLocaleString()}</p>
             </div>
