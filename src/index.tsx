@@ -334,6 +334,49 @@ app.post(`/users/${USERNAME}/inbox`, async (c) => {
         }
       }
     }
+    case "Create": {
+      const actorId = body.actor
+      const object = body.object
+
+      switch (object.type) {
+        case "Note": {
+          const actorUser = await prisma.user.findUnique({
+            where: {
+              actorId,
+            },
+          })
+
+          if (actorUser === null) {
+            return c.json(
+              {
+                error: "invalid_object",
+              },
+              400
+            )
+          }
+
+          // ユーザーは一人しか居ないので、inboxに送られてきた投稿は全て自分の投稿として処理する
+          // ちゃんと実装するときは、toとかccとかを見て送信先ユーザーを振り分けてね
+          await prisma.post.create({
+            data: {
+              content: object.content,
+              authorId: actorUser.id,
+              postedAt: new Date(object.published),
+            },
+          })
+
+          return c.json({})
+        }
+        default: {
+          return c.json(
+            {
+              error: "invalid_type",
+            },
+            400
+          )
+        }
+      }
+    }
     case "Undo": {
       const actorId = body.actor
       const object = body.object
@@ -367,24 +410,14 @@ app.post(`/users/${USERNAME}/inbox`, async (c) => {
           return c.json({})
         }
         default: {
-          return c.json(
-            {
-              error: "invalid_type",
-            },
-            400
-          )
+          // 握りつぶす (投稿削除とかも来るのでちゃんと処理してね)
+          return c.json({})
         }
       }
     }
     default: {
-      // TODO: フォロー解除を処理する, こっちからフォローしたののAcceptを処理する
-
-      return c.json(
-        {
-          error: "invalid_type",
-        },
-        400
-      )
+      // ねこだからわかんにゃい
+      return c.json({})
     }
   }
 })
