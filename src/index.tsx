@@ -29,7 +29,7 @@ const auth = basicAuth({
   password: process.env.PASSWORD || "password",
 })
 app.use("/timeline", auth)
-app.use("/action", auth)
+app.use("/action/*", auth)
 
 const getSelfUser = async () => {
   const selfUser = await prisma.user.findUnique({
