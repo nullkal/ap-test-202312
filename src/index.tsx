@@ -436,7 +436,7 @@ app.post("/action/follow", async (c) => {
 
   switch (body.action) {
     case "follow": {
-      signedFetch(targetUser.actorInbox, {
+      await signedFetch(targetUser.actorInbox, {
         method: "POST",
         body: JSON.stringify({
           "@context": "https://www.w3.org/ns/activitystreams",
@@ -452,7 +452,7 @@ app.post("/action/follow", async (c) => {
       return c.json({})
     }
     case "unfollow": {
-      signedFetch(targetUser.actorInbox, {
+      await signedFetch(targetUser.actorInbox, {
         method: "POST",
         body: JSON.stringify({
           "@context": "https://www.w3.org/ns/activitystreams",
