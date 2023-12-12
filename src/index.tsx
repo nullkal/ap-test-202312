@@ -598,8 +598,10 @@ app.get("/timeline", async (c) => {
                   </a>
                 </div>
               </div>
-              <p>{stripHtml(post.content).result}</p>
-              <p>{post.postedAt.toLocaleString()}</p>
+              <div style="margin: 0.25em;">
+                {stripHtml(post.content).result}
+              </div>
+              <div style="color: #999;">{post.postedAt.toLocaleString()}</div>
             </div>
           )
         })}
