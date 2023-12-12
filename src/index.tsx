@@ -29,8 +29,6 @@ const auth = basicAuth({
   password: process.env.PASSWORD || "password",
 })
 app.use("/timeline", auth)
-app.use("/followers", auth)
-app.use("/followings", auth)
 app.use("/action", auth)
 
 const getSelfUser = async () => {
@@ -382,20 +380,15 @@ app.get("/timeline", async (c) => {
             <p>
               @nullkal
               <br />
-              フォロワー:{" "}
-              <a href="/followers">
-                {await prisma.follows.count({
-                  where: { followerId: selfUser.id },
-                })}
-                人
-              </a>
-              , フォロー中:{" "}
-              <a href="/followings">
-                {await prisma.follows.count({
-                  where: { followingId: selfUser.id },
-                })}
-                人
-              </a>
+              フォロワー:
+              {await prisma.follows.count({
+                where: { followerId: selfUser.id },
+              })}
+              人 , フォロー中:
+              {await prisma.follows.count({
+                where: { followingId: selfUser.id },
+              })}
+              人
             </p>
           </div>
         </div>
