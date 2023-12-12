@@ -225,6 +225,7 @@ const getUserByActorId = async (actorId: string) => {
       iconUrl: actor.icon.url,
       publicKey: actor.publicKey.publicKeyPem,
       actorId,
+      actorInbox: actor.inbox,
     },
     update: {},
   })
