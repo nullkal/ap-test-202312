@@ -7,7 +7,7 @@ import { basicAuth } from "hono/basic-auth"
 import { logger } from "hono/logger"
 import fetch from "node-fetch"
 import * as fs from "fs"
-import { PrismaClient } from "@prisma/client"
+import { PrismaClient, User } from "@prisma/client"
 import { assert } from "console"
 import { Sha256Signer } from "activitypub-http-signatures"
 import * as crypto from "crypto"
@@ -246,6 +246,7 @@ app.post(`/users/${USERNAME}/inbox`, async (c) => {
           displayName: actor.name,
           iconUrl: actor.icon.url,
           publicKey: actor.publicKey.publicKeyPem,
+          actorId,
         },
         update: {},
       })
@@ -280,6 +281,48 @@ app.post(`/users/${USERNAME}/inbox`, async (c) => {
       })
 
       return c.json({})
+    }
+    case "Undo": {
+      const actorId = body.actor
+      const object = body.object
+
+      switch (object.type) {
+        case "Follow": {
+          const objectUser = await prisma.user.findUnique({
+            where: {
+              actorId,
+            },
+          })
+
+          if (objectUser === null) {
+            return c.json(
+              {
+                error: "invalid_object",
+              },
+              400
+            )
+          }
+
+          await prisma.follows.delete({
+            where: {
+              followerId_followingId: {
+                followerId: selfUser.id,
+                followingId: objectUser.id,
+              },
+            },
+          })
+
+          return c.json({})
+        }
+        default: {
+          return c.json(
+            {
+              error: "invalid_type",
+            },
+            400
+          )
+        }
+      }
     }
     default: {
       // TODO: フォロー解除を処理する, こっちからフォローしたののAcceptを処理する

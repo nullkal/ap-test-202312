@@ -6,7 +6,8 @@ CREATE TABLE "User" (
     "inbox" TEXT NOT NULL,
     "displayName" TEXT NOT NULL,
     "iconUrl" TEXT NOT NULL,
-    "publicKey" TEXT NOT NULL
+    "publicKey" TEXT NOT NULL,
+    "actorId" TEXT NOT NULL
 );
 
 -- CreateTable
@@ -27,6 +28,9 @@ CREATE TABLE "Post" (
     "postedAt" DATETIME NOT NULL,
     CONSTRAINT "Post_authorId_fkey" FOREIGN KEY ("authorId") REFERENCES "User" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_actorId_key" ON "User"("actorId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_domain_screenName_key" ON "User"("domain", "screenName");

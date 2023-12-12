@@ -19,6 +19,7 @@ async function main() {
       displayName: USERNAME,
       iconUrl: `https://${DOMAIN}/static/icon.png`,
       publicKey: PUBLIC_KEY,
+      actorId: `https://${DOMAIN}/users/${USERNAME}`,
     },
   })
 }

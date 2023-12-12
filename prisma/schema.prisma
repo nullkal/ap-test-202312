@@ -11,13 +11,14 @@ datasource db {
 }
 
 model User {
-  id Int @id @default(autoincrement())
-  screenName String
-  domain String
-  inbox String
+  id          Int    @id @default(autoincrement())
+  screenName  String
+  domain      String
+  inbox       String
   displayName String
-  iconUrl String
-  publicKey String
+  iconUrl     String
+  publicKey   String
+  actorId     String @unique
 
   followers Follows[] @relation("following")
   following Follows[] @relation("follower")
@@ -28,18 +29,18 @@ model User {
 }
 
 model Follows {
-  follower User @relation("follower", fields: [followerId], references: [id])
-  followerId Int
-  following User @relation("following", fields: [followingId], references: [id])
+  follower    User @relation("follower", fields: [followerId], references: [id])
+  followerId  Int
+  following   User @relation("following", fields: [followingId], references: [id])
   followingId Int
 
   @@id([followerId, followingId])
 }
 
 model Post {
-  id Int @id @default(autoincrement())
-  content String
-  author User @relation(fields: [authorId], references: [id])
+  id       Int      @id @default(autoincrement())
+  content  String
+  author   User     @relation(fields: [authorId], references: [id])
   authorId Int
   postedAt DateTime
 }
