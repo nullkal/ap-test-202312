@@ -7,7 +7,8 @@ CREATE TABLE "User" (
     "displayName" TEXT NOT NULL,
     "iconUrl" TEXT NOT NULL,
     "publicKey" TEXT NOT NULL,
-    "actorId" TEXT NOT NULL
+    "actorId" TEXT NOT NULL,
+    "actorInbox" TEXT NOT NULL
 );
 
 -- CreateTable

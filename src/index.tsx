@@ -201,6 +201,37 @@ var getUserAction = (c: Context) => {
 app.get(`/@${USERNAME}`, getUserAction)
 app.get(`/users/${USERNAME}`, getUserAction)
 
+const getUserByActorId = async (actorId: string) => {
+  const actorDomain = new URL(actorId).host
+
+  const actor: any = await (
+    await fetch(actorId, {
+      headers: { Accept: "application/activity+json" },
+    })
+  ).json()
+
+  const actorUser = await prisma.user.upsert({
+    where: {
+      domain_screenName: {
+        domain: actorDomain,
+        screenName: actor.preferredUsername,
+      },
+    },
+    create: {
+      screenName: actor.preferredUsername,
+      domain: actorDomain,
+      inbox: actor.inbox,
+      displayName: actor.name,
+      iconUrl: actor.icon.url,
+      publicKey: actor.publicKey.publicKeyPem,
+      actorId,
+    },
+    update: {},
+  })
+
+  return actorUser
+}
+
 app.post(`/users/${USERNAME}/inbox`, async (c) => {
   var selfUser = await getSelfUser()
 
@@ -222,32 +253,7 @@ app.post(`/users/${USERNAME}/inbox`, async (c) => {
       // (注意！) 送信元のユーザーの正当性を確認していない危険な実装になっているので、
       // ちゃんと実装するときにはHTTP Signatureを使って送信元のユーザーを確認してください。
 
-      const actorDomain = new URL(actorId).host
-
-      const actor: any = await (
-        await fetch(actorId, {
-          headers: { Accept: "application/activity+json" },
-        })
-      ).json()
-
-      const actorUser = await prisma.user.upsert({
-        where: {
-          domain_screenName: {
-            domain: actorDomain,
-            screenName: actor.preferredUsername,
-          },
-        },
-        create: {
-          screenName: actor.preferredUsername,
-          domain: actorDomain,
-          inbox: actor.inbox,
-          displayName: actor.name,
-          iconUrl: actor.icon.url,
-          publicKey: actor.publicKey.publicKeyPem,
-          actorId,
-        },
-        update: {},
-      })
+      const actorUser = await getUserByActorId(actorId)
 
       await prisma.follows.upsert({
         where: {
@@ -270,7 +276,7 @@ app.post(`/users/${USERNAME}/inbox`, async (c) => {
         actor: `https://${DOMAIN}/users/${USERNAME}`,
         object: body,
       }
-      const resp = await signedFetch(actor.inbox, {
+      const resp = await signedFetch(actorUser.actorInbox, {
         method: "POST",
         body: JSON.stringify(acceptRequestJson),
         headers: {
@@ -279,6 +285,53 @@ app.post(`/users/${USERNAME}/inbox`, async (c) => {
       })
 
       return c.json({})
+    }
+    case "Accept": {
+      const actorId = body.actor
+      const object = body.object
+
+      switch (object.type) {
+        case "Follow": {
+          const objectUser = await prisma.user.findUnique({
+            where: {
+              actorId,
+            },
+          })
+
+          if (objectUser === null) {
+            return c.json(
+              {
+                error: "invalid_object",
+              },
+              400
+            )
+          }
+
+          await prisma.follows.upsert({
+            where: {
+              followerId_followingId: {
+                followerId: objectUser.id,
+                followingId: selfUser.id,
+              },
+            },
+            create: {
+              followerId: objectUser.id,
+              followingId: selfUser.id,
+            },
+            update: {},
+          })
+
+          return c.json({})
+        }
+        default: {
+          return c.json(
+            {
+              error: "invalid_type",
+            },
+            400
+          )
+        }
+      }
     }
     case "Undo": {
       const actorId = body.actor
@@ -336,6 +389,8 @@ app.post(`/users/${USERNAME}/inbox`, async (c) => {
 })
 
 app.post("/action/follow", async (c) => {
+  const selfUser = await getSelfUser()
+
   const body = await c.req.parseBody()
   if (!body.targetUser) {
     return c.json(
@@ -357,26 +412,73 @@ app.post("/action/follow", async (c) => {
   }
 
   const [, targetUserScreenName, targetUserDomain] = parsedUserName
-  const webfingerResp = await (
+  const webfingerResp = (await (
     await fetch(
       `https://${targetUserDomain}/.well-known/webfinger?resource=acct:${targetUserScreenName}@${targetUserDomain}`
     )
-  ).json()
+  ).json()) as any
 
   const targetActorId = (webfingerResp.links as any[]).find(
     (link: any) =>
       link.rel === "self" && link.type === "application/activity+json"
   ).href
 
-  console.log(`href: ${targetActorId}`)
+  const targetUser = await getUserByActorId(targetActorId)
+  if (targetUser === null) {
+    return c.json(
+      {
+        error: "invalid_target_user",
+      },
+      400
+    )
+  }
 
   switch (body.action) {
     case "follow": {
-      // TODO: 実装する
+      signedFetch(targetUser.actorInbox, {
+        method: "POST",
+        body: JSON.stringify({
+          "@context": "https://www.w3.org/ns/activitystreams",
+          id: `https://${DOMAIN}/users/${USERNAME}/outbox/1`,
+          type: "Follow",
+          actor: `https://${DOMAIN}/users/${USERNAME}`,
+          object: targetActorId,
+        }),
+        headers: {
+          "Content-Type": "application/activity+json",
+        },
+      })
       return c.json({})
     }
     case "unfollow": {
-      // TODO: 実装する
+      signedFetch(targetUser.actorInbox, {
+        method: "POST",
+        body: JSON.stringify({
+          "@context": "https://www.w3.org/ns/activitystreams",
+          id: `https://${DOMAIN}/users/${USERNAME}/outbox/1`,
+          type: "Undo",
+          actor: `https://${DOMAIN}/users/${USERNAME}`,
+          object: {
+            id: `https://${DOMAIN}/users/${USERNAME}/outbox/1`,
+            type: "Follow",
+            actor: `https://${DOMAIN}/users/${USERNAME}`,
+            object: targetActorId,
+          },
+        }),
+        headers: {
+          "Content-Type": "application/activity+json",
+        },
+      })
+
+      await prisma.follows.delete({
+        where: {
+          followerId_followingId: {
+            followerId: targetUser.id,
+            followingId: selfUser.id,
+          },
+        },
+      })
+
       return c.json({})
     }
     default: {

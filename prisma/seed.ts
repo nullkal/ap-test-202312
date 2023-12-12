@@ -20,6 +20,7 @@ async function main() {
       iconUrl: `https://${DOMAIN}/static/icon.png`,
       publicKey: PUBLIC_KEY,
       actorId: `https://${DOMAIN}/users/${USERNAME}`,
+      actorInbox: `https://${DOMAIN}/users/${USERNAME}/inbox`,
     },
   })
 }

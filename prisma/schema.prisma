@@ -19,6 +19,7 @@ model User {
   iconUrl     String
   publicKey   String
   actorId     String @unique
+  actorInbox  String
 
   followers Follows[] @relation("following")
   following Follows[] @relation("follower")
