@@ -573,7 +573,25 @@ app.get("/timeline", async (c) => {
         </form>
 
         <h2>タイムライン</h2>
-        <p>TODO: ユーザーのタイムラインを表示する</p>
+        {(
+          await prisma.post.findMany({
+            orderBy: { postedAt: "desc" },
+            take: 20,
+            include: { author: true },
+          })
+        ).map((post) => {
+          return (
+            <div>
+              <p>
+                <a href={post.author.actorId}>
+                  @{post.author.screenName}@{post.author.domain}
+                </a>
+              </p>
+              <p>{post.content}</p>
+              <p>{post.postedAt.toLocaleString()}</p>
+            </div>
+          )
+        })}
       </body>
     </html>
   )
