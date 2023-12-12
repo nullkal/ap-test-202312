@@ -427,7 +427,7 @@ app.get("/timeline", async (c) => {
         </div>
 
         <form action="/action/follow" method="POST">
-          <input type="text" name="user" />
+          <input type="text" name="targetUser" />
           <button type="submit" name="action" value="follow">
             フォロー
           </button>
