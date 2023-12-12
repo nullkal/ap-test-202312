@@ -581,7 +581,7 @@ app.get("/timeline", async (c) => {
           })
         ).map((post) => {
           return (
-            <div>
+            <div style="border-bottom: 1px solid #999;">
               <div style="display: flex; align-items: center;">
                 <img
                   src={post.author.iconUrl}
