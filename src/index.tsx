@@ -545,7 +545,7 @@ app.get("/timeline", async (c) => {
             hegiht="64"
             style=" width: 64px; height: 64px; border: solid 1px #999; flex-shrink: 0;"
           />
-          <div>
+          <div style="margin-left: 1em;">
             <p>
               @nullkal
               <br />
@@ -584,12 +584,12 @@ app.get("/timeline", async (c) => {
             <div>
               <div style="display: flex; align-items: center;">
                 <img
-                  src="/static/icon.png"
+                  src={post.author.iconUrl}
                   width="64"
                   hegiht="64"
                   style=" width: 64px; height: 64px; border: solid 1px #999; flex-shrink: 0;"
                 />
-                <div>
+                <div style="margin-left: 1em;">
                   {post.author.displayName}
                   <br />
                   <a href={post.author.actorId}>
