@@ -598,7 +598,7 @@ app.get("/timeline", async (c) => {
                   </a>
                 </div>
               </div>
-              <p>{stripHtml(post.content)}</p>
+              <p>{stripHtml(post.content).result}</p>
               <p>{post.postedAt.toLocaleString()}</p>
             </div>
           )
