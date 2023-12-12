@@ -337,6 +337,39 @@ app.post(`/users/${USERNAME}/inbox`, async (c) => {
 
 app.post("/action/follow", async (c) => {
   const body = await c.req.parseBody()
+  if (!body.targetUser) {
+    return c.json(
+      {
+        error: "invalid_target_user",
+      },
+      400
+    )
+  }
+
+  const parsedUserName = (body.targetUser as string).match(/@(.*)@(.*)/)
+  if (!parsedUserName) {
+    return c.json(
+      {
+        error: "invalid_target_user",
+      },
+      400
+    )
+  }
+
+  const [, targetUserScreenName, targetUserDomain] = parsedUserName
+  const webfingerResp = await (
+    await fetch(
+      `https://${targetUserDomain}/.well-known/webfinger?resource=acct:${targetUserScreenName}@${targetUserDomain}`
+    )
+  ).json()
+
+  const targetActorId = (webfingerResp.links as any[]).find(
+    (link: any) =>
+      link.rel === "self" && link.type === "application/activity+json"
+  ).href
+
+  console.log(`href: ${targetActorId}`)
+
   switch (body.action) {
     case "follow": {
       // TODO: 実装する
@@ -397,6 +430,9 @@ app.get("/timeline", async (c) => {
           <input type="text" name="user" />
           <button type="submit" name="action" value="follow">
             フォロー
+          </button>
+          <button type="submit" name="action" value="unfollow">
+            フォロー解除
           </button>
         </form>
 
