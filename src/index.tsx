@@ -11,6 +11,7 @@ import { PrismaClient, User } from "@prisma/client"
 import { assert } from "console"
 import { Sha256Signer } from "activitypub-http-signatures"
 import * as crypto from "crypto"
+import { stripHtml } from "string-strip-html"
 
 const USERNAME = process.env.USERNAME || "nullkal"
 const DOMAIN = process.env.DOMAIN || "localhost"
@@ -580,9 +581,6 @@ app.get("/timeline", async (c) => {
             include: { author: true },
           })
         ).map((post) => {
-          let elem = document.createElement("div")
-          elem.innerHTML = post.content
-
           return (
             <div style="border-bottom: 1px solid #999;">
               <div style="display: flex; align-items: center;">
@@ -600,7 +598,7 @@ app.get("/timeline", async (c) => {
                   </a>
                 </div>
               </div>
-              <p>{elem.textContent}</p>
+              <p>{stripHtml(post.content)}</p>
               <p>{post.postedAt.toLocaleString()}</p>
             </div>
           )
