@@ -580,6 +580,9 @@ app.get("/timeline", async (c) => {
             include: { author: true },
           })
         ).map((post) => {
+          let elem = document.createElement("div")
+          elem.innerHTML = post.content
+
           return (
             <div style="border-bottom: 1px solid #999;">
               <div style="display: flex; align-items: center;">
@@ -597,7 +600,7 @@ app.get("/timeline", async (c) => {
                   </a>
                 </div>
               </div>
-              <p>{post.content}</p>
+              <p>{elem.textContent}</p>
               <p>{post.postedAt.toLocaleString()}</p>
             </div>
           )
