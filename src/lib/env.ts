@@ -16,6 +16,6 @@ export const domain = process.env.DOMAIN!
 export const publicKey = fs.readFileSync("./data/public.pem", "utf8")
 export const privateKey = fs.readFileSync("./data/private.pem", "utf8")
 
-export const fullUserName = `${domain}@${userName}`
+export const fullUserName = `${userName}@${domain}`
 export const userUrl = `https://${domain}/@${userName}`
 export const userActorUrl = `https://${domain}/users/${userName}`
