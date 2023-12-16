@@ -18,6 +18,7 @@ app.use("/timeline", auth)
 app.use("/action/*", auth)
 
 import indexController from "./controllers/index"
+import inboxController from "./controllers/inbox"
 import nodeInfoController from "./controllers/node-info"
 import userController from "./controllers/user"
 import followActionController from "./controllers/actions/follow"
@@ -26,6 +27,7 @@ import postActionController from "./controllers/actions/follow"
 app.route("/", indexController)
 app.route("/", nodeInfoController)
 app.route("/", userController)
+app.route("/", inboxController)
 app.route("/", followActionController)
 app.route("/", postActionController)
 
