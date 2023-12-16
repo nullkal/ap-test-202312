@@ -21,8 +21,8 @@ model User {
   actorId     String @unique
   actorInbox  String
 
-  followers Follows[] @relation("following")
-  following Follows[] @relation("follower")
+  followers Follows[] @relation("follower")
+  following Follows[] @relation("following")
 
   posts Post[]
 

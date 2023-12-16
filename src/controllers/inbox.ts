@@ -61,7 +61,7 @@ const processFollowActivity = async (c: Context, selfUser: User, body: any) => {
     actor: env.userActorUrl,
     object: body,
   }
-  await signedFetch(actorUser.actorInbox, {
+  const resp = await signedFetch(actorUser.actorInbox, {
     method: "POST",
     body: JSON.stringify(acceptRequestJson),
     headers: {
