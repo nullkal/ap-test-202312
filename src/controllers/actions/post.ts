@@ -76,7 +76,7 @@ app.post("/action/post", async (c) => {
     })
   }
 
-  return c.redirect("/")
+  return c.redirect("/timeline")
 })
 
 export default app
