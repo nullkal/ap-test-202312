@@ -44,6 +44,11 @@ const timeline = (props: TimelineProps) => (
     </form>
 
     <h2>タイムライン</h2>
+    <form action="/action/post" method="POST">
+      <textarea name="content" style="width: 100%; height: 5em;"></textarea>
+      <button type="submit">投稿</button>
+    </form>
+
     {props.posts.map((post) => {
       return (
         <div style="border-bottom: 1px solid #999;">

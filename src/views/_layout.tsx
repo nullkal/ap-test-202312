@@ -12,9 +12,17 @@ const layout = (props: LayoutProps) => (
         {props.title ? `${props.title} - ` : ""}An experimental implementation
         of ActivityPub (2023/12)
       </title>
+      <link
+        rel="stylesheet"
+        href="https://unpkg.com/normalize.css@8.0.1/normalize.css"
+      />
     </head>
 
-    <body>{props.children}</body>
+    <body>
+      <div style="width: 100%; max-width: 1024px; margin: auto 0;">
+        {props.children}
+      </div>
+    </body>
   </html>
 )
 
