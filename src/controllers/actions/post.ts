@@ -27,12 +27,8 @@ app.post("/action/post", async (c) => {
       where: {
         followerId: selfUser.id,
       },
-      select: {
-        following: {
-          select: {
-            actorInbox: true,
-          },
-        },
+      include: {
+        following: true,
       },
     })
   ).map((follow) => follow.following.actorInbox)
@@ -65,7 +61,7 @@ app.post("/action/post", async (c) => {
   }
 
   for (const inbox of followerActorInbox) {
-    await signedFetch(inbox, {
+    const resp = await signedFetch(inbox, {
       method: "POST",
       body: JSON.stringify(createNoteJson),
       headers: {
@@ -74,6 +70,8 @@ app.post("/action/post", async (c) => {
       publicKeyId: `${env.userActorUrl}#main-key`,
       privateKey: env.privateKey,
     })
+
+    console.log(`${inbox}: ${resp.status} ${await resp.text()}`)
   }
 
   return c.redirect("/timeline")
