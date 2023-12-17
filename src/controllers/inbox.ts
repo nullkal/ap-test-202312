@@ -191,14 +191,16 @@ const processUndoFollowActivity = async (
     return responses.InvalidObject(c)
   }
 
-  await prisma.follows.delete({
-    where: {
-      followerId_followingId: {
-        followerId: selfUser.id,
-        followingId: objectUser.id,
+  try {
+    await prisma.follows.delete({
+      where: {
+        followerId_followingId: {
+          followerId: selfUser.id,
+          followingId: objectUser.id,
+        },
       },
-    },
-  })
+    })
+  } catch (e) {}
 
   return responses.Success(c)
 }
