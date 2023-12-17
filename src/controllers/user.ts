@@ -76,6 +76,8 @@ app.get(`/@:userName`, ...userHandlers)
 app.get(`/users/:userName`, ...userHandlers)
 
 app.get(`/users/:userName/followers`, async (c) => {
+  const selfUser = await getSelfUser()
+
   if (!c.req.header("accept")?.includes("application/activity+json")) {
     return c.redirect(`https://${env.domain}/`)
   }
@@ -83,17 +85,30 @@ app.get(`/users/:userName/followers`, async (c) => {
   if (c.req.param("userName") !== env.userName) {
     return responses.NotFound(c)
   }
+
+  const followers = (
+    await prisma.follows.findMany({
+      where: {
+        followerId: selfUser.id,
+      },
+      include: {
+        following: true,
+      },
+    })
+  ).map((follow) => follow.following)
 
   return c.json({
     "@context": "https://www.w3.org/ns/activitystreams",
     id: `${env.userActorUrl}/followers`,
     type: "OrderedCollection",
-    totalItems: 0,
-    orderedItems: [],
+    totalItems: followers.length,
+    orderedItems: followers.map((follower) => follower.actorId),
   })
 })
 
 app.get(`/users/:userName/following`, async (c) => {
+  const selfUser = await getSelfUser()
+
   if (!c.req.header("accept")?.includes("application/activity+json")) {
     return c.redirect(`https://${env.domain}/`)
   }
@@ -102,12 +117,23 @@ app.get(`/users/:userName/following`, async (c) => {
     return responses.NotFound(c)
   }
 
+  const following = (
+    await prisma.follows.findMany({
+      where: {
+        followingId: selfUser.id,
+      },
+      include: {
+        follower: true,
+      },
+    })
+  ).map((follow) => follow.follower)
+
   return c.json({
     "@context": "https://www.w3.org/ns/activitystreams",
-    id: `${env.userActorUrl}/following`,
+    id: `${env.userActorUrl}/followers`,
     type: "OrderedCollection",
-    totalItems: 0,
-    orderedItems: [],
+    totalItems: following.length,
+    orderedItems: following.map((following) => following.actorId),
   })
 })
 
