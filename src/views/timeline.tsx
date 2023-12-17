@@ -25,7 +25,7 @@ const timeline = (props: TimelineProps) => (
       />
       <div style="margin-left: 1em;">
         <p>
-          @nullkal
+          @{props.selfUser.screenName}
           <br />
           フォロワー: {props.selfFolowersCount} 人, フォロー中:{" "}
           {props.selfFollowingCount} 人
