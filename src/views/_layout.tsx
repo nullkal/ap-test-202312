@@ -19,7 +19,7 @@ const layout = (props: LayoutProps) => (
     </head>
 
     <body>
-      <div style="width: 100%; max-width: 1024px; margin: auto 0;">
+      <div style="width: 100%; max-width: 1024px; margin: 2em auto;">
         {props.children}
       </div>
     </body>
