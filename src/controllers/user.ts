@@ -75,7 +75,7 @@ const userHandlers = factory.createHandlers((c) => {
 app.get(`/@:userName`, ...userHandlers)
 app.get(`/users/:userName`, ...userHandlers)
 
-app.get(`/usres/:userName/outbox`, async (c) => {
+app.get(`/users/:userName/outbox`, async (c) => {
   const selfUser = await getSelfUser()
 
   if (!c.req.header("accept")?.includes("application/activity+json")) {
