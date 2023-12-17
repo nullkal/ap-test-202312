@@ -2,6 +2,8 @@ import { Hono } from "hono"
 import { createFactory } from "hono/factory"
 import * as env from "../lib/env"
 import * as responses from "../lib/responses"
+import prisma from "../lib/prisma"
+import { getSelfUser } from "../lib/get-user"
 
 const app = new Hono()
 
@@ -72,5 +74,51 @@ const userHandlers = factory.createHandlers((c) => {
 
 app.get(`/@:userName`, ...userHandlers)
 app.get(`/users/:userName`, ...userHandlers)
+
+app.get(`/usres/:userName/following`, (c) => {
+  const selfUser = await getSelfUser()
+
+  if (!c.req.header("accept")?.includes("application/activity+json")) {
+    return c.redirect(`https://${env.domain}/`)
+  }
+
+  if (c.req.param("userName") !== env.userName) {
+    return responses.NotFound(c)
+  }
+
+  const posts = await prisma.post.findMany({
+    where: {
+      authorId: selfUser.id,
+    },
+    orderBy: {
+      postedAt: "desc",
+    },
+  })
+
+  return c.json({
+    "@context": [
+      "https://www.w3.org/ns/activitystreams",
+      {
+        sensitive: "as:sensitive",
+      },
+    ],
+    id: `${env.userActorUrl}/outbox`,
+    type: "OrderedCollection",
+    totalItems: posts.length,
+    orderedItems: posts.map((post) => ({
+      id: `${env.userActorUrl}/posts/${post.id}`,
+      type: "Note",
+      summary: null,
+      inReplyTo: null,
+      published: post.postedAt.toISOString(),
+      url: `${env.userActorUrl}/posts/${post.id}`,
+      attributedTo: env.userActorUrl,
+      to: ["https://www.w3.org/ns/activitystreams#Public"],
+      cc: [`${env.userActorUrl}/followers`],
+      sensitive: false,
+      content: `<p>${post.content}</p>`,
+    })),
+  })
+})
 
 export default app
