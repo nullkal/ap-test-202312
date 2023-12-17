@@ -22,7 +22,7 @@ import inboxController from "./controllers/inbox"
 import nodeInfoController from "./controllers/node-info"
 import userController from "./controllers/user"
 import followActionController from "./controllers/actions/follow"
-import postActionController from "./controllers/actions/follow"
+import postActionController from "./controllers/actions/post"
 
 app.route("/", indexController)
 app.route("/", nodeInfoController)
