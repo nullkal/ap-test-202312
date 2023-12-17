@@ -1,26 +1,25 @@
-import 'dotenv/config'
-import { PrismaClient } from '@prisma/client'
-import * as fs from 'fs'
+import { PrismaClient } from "@prisma/client"
+import * as fs from "fs"
+import * as env from "../src/lib/env"
 
-const USERNAME = process.env.USERNAME || 'nullkal'
-const DOMAIN = process.env.DOMAIN || 'localhost'
-
-const PUBLIC_KEY = fs.readFileSync('./data/public.pem', 'utf8')
+const PUBLIC_KEY = fs.readFileSync("./data/public.pem", "utf8")
 
 const prisma = new PrismaClient()
 async function main() {
   const selfUser = await prisma.user.upsert({
-    where: { domain_screenName: { domain: DOMAIN, screenName: USERNAME } },
+    where: {
+      domain_screenName: { domain: env.domain, screenName: env.userName },
+    },
     update: {},
     create: {
-      screenName: USERNAME,
-      domain: DOMAIN,
-      inbox: `https://${DOMAIN}/users/${USERNAME}/inbox`,
-      displayName: USERNAME,
-      iconUrl: `https://${DOMAIN}/static/icon.png`,
+      screenName: env.userName,
+      domain: env.domain,
+      inbox: `${env.userActorUrl}/inbox`,
+      displayName: env.userName,
+      iconUrl: `https://${env.domain}/static/icon.png`,
       publicKey: PUBLIC_KEY,
-      actorId: `https://${DOMAIN}/users/${USERNAME}`,
-      actorInbox: `https://${DOMAIN}/users/${USERNAME}/inbox`,
+      actorId: env.userActorUrl,
+      actorInbox: `${env.userActorUrl}/inbox`,
     },
   })
 }
