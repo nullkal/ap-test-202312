@@ -75,6 +75,42 @@ const userHandlers = factory.createHandlers((c) => {
 app.get(`/@:userName`, ...userHandlers)
 app.get(`/users/:userName`, ...userHandlers)
 
+app.get(`/users/:userName/followers`, async (c) => {
+  if (!c.req.header("accept")?.includes("application/activity+json")) {
+    return c.redirect(`https://${env.domain}/`)
+  }
+
+  if (c.req.param("userName") !== env.userName) {
+    return responses.NotFound(c)
+  }
+
+  return c.json({
+    "@context": "https://www.w3.org/ns/activitystreams",
+    id: `${env.userActorUrl}/followers`,
+    type: "OrderedCollection",
+    totalItems: 0,
+    orderedItems: [],
+  })
+})
+
+app.get(`/users/:userName/following`, async (c) => {
+  if (!c.req.header("accept")?.includes("application/activity+json")) {
+    return c.redirect(`https://${env.domain}/`)
+  }
+
+  if (c.req.param("userName") !== env.userName) {
+    return responses.NotFound(c)
+  }
+
+  return c.json({
+    "@context": "https://www.w3.org/ns/activitystreams",
+    id: `${env.userActorUrl}/following`,
+    type: "OrderedCollection",
+    totalItems: 0,
+    orderedItems: [],
+  })
+})
+
 app.get(`/users/:userName/outbox`, async (c) => {
   const selfUser = await getSelfUser()
 
