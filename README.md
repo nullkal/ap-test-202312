@@ -1,11 +1,19 @@
 # ap-test-202312
-An experimental implementation of ActivityPub
+
+ActivityPubを実装し、Mastodon/Misskeyと相互接続出来る最小限の実装を試験するためのプロジェクトです。
+
+## ※警告※
+
+本プロジェクトは本番使用を想定したプロジェクトではありません。実装簡略化の都合上、随所に脆弱性を含んでいます。
+そのまま公開サーバーへデプロイすることはお控えいただき、あくまでもActivityPub実装を行う上での参考資料としてお使いください。
+
+また本実装の動作検証は2023年12月時点の環境で行いましたので、最新のActivityPub仕様に準拠していない可能性があります。
+最新のActivityPub仕様は、公式の仕様書や各ActivityPub実装のドキュメント、コードをご参照ください。
+
+## 実行方法
 
 ```
 npm install
 npm run dev
-```
-
-```
 open http://localhost:3000
 ```
